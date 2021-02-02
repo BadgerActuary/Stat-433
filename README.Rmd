@@ -4,6 +4,61 @@ author: "Dingyi Li"
 date: "2/2/2021"
 output: github_document
 ---
+```{r}
+library(data.table)
+library(readr)
+library(readtext)
+```
+### Delimited files
+```{r}
+d_file = fread("WI19_delimited.txt")
+```
 
 
-Hello World
+
+```{r}
+data = read.delim("WI19.txt", quote = "", header = FALSE)
+# data = read_tsv("WI19.txt",col_names = FALSE)
+# data = readtext("WI19.txt")
+ex = data[1,]
+```
+
+```{r}
+colNum = 116
+rowNum = dim(data)[1]
+total = colNum*rowNum
+bridge = matrix(1:total, ncol = colNum, byrow = T)
+# colnames(bridge)=c("State","HAD", "County", "Place", "Inventory","Feature Intersected", "Facility Carried by Structure", "Structure Number","Location","")
+digits = c(3,2,3,5,9,25,18,15,25,4,
+           7,1,12,0,0,8,9,0,3,1,
+           2,2,0,0,0,2,4,4,6,4,
+           1,4,1,2,1,4,1,1,4,5,
+           1,2,3,3,3,4,3,5,6,6,
+           4,4,4,5,4,3,0,1,1,1,
+           1,1,1,3,1,3,1,1,1,1,
+           1,1,0,0,3,6,0,0,0,0,
+           0,0,0,0,0,0,0,0,0,4,
+           2,9,12,6,6,6,4,5,15,1,
+           1,1,1,1,1,4,1,3,2,1,
+           1,1,1,6,4,4)
+```
+
+```{r}
+index=c()
+```
+ 
+
+```{r}
+library(stringr)
+temp = unlist(str_split(ex,""))
+```
+
+
+```{r}
+for (i in 1:rowNum){
+  for (j in 1:colNum){
+     bridge[i,j]=paste()
+  }
+}
+```
+
