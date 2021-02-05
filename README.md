@@ -76,3 +76,7 @@ ggplot(dt_filtered, aes(Built_year, avgLength))+
 ``` r
 # dev.off()
 ```
+
+## GitHub link
+
+<https://github.com/BadgerActuary/Stat-433>
