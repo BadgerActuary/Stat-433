@@ -1,0 +1,40 @@
+---
+title: "HW1"
+author: "Dingyi Li"
+date: "2/2/2021"
+output: github_document
+---
+```{r}
+library(data.table)
+library(readr)
+library(tidyverse)
+```
+### Delimited files
+```{r}
+# Download file
+d_file = fread("https://www.fhwa.dot.gov/bridge/nbi/2019/delimited/WI19.txt")
+```
+
+```{r}
+# Create table with selected columns
+dt = cbind(d_file$STRUCTURE_NUMBER_008,d_file$YEAR_BUILT_027, d_file$YEAR_RECONSTRUCTED_106, d_file$STATE_CODE_001, d_file$COUNTY_CODE_003, d_file$PLACE_CODE_004,d_file$STRUCTURE_LEN_MT_049, d_file$DESIGN_LOAD_031, d_file$TOLL_020)
+colnames(dt)=c("id","Built_year", "Reconstruct_year", "State_code", "County_code", "Place_code","Structure_length","Design_load", "Toll")
+
+dt = as.data.frame(dt)
+
+dt$Structure_length = as.numeric(dt$Structure_length)
+```
+
+
+```{r}
+dt_filtered = dt %>% group_by(Built_year) %>% summarise(avgLength = mean(Structure_length))
+
+# tiff("bridgePlot.tiff", units="in", width=5, height=5, res=300)
+ggplot(dt_filtered, aes(Built_year, avgLength))+
+  geom_point()+
+  theme(axis.text.x=element_text(size = 3, angle=90))
+# dev.off()
+```
+
+## GitHub link
+https://github.com/BadgerActuary/Stat-433

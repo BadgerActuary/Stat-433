@@ -1,0 +1,6 @@
+"0","randX = replicate(n=10000, expr=rnorm(10,0,1))"
+"0","minX = apply(randX, 2, min)"
+"0","maxX = apply(randX, 2, max)"
+"0",""
+"0","par(mfrow=c(1,2))"
+"0","plot(density(minX), main = ""X1"")"

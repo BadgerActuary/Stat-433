@@ -1,0 +1,7 @@
+"0","dt_filtered = dt %>% group_by(Built_year) %>% summarise(avgLength = mean(Structure_length))"
+"2","`summarise()` ungrouping output (override with `.groups` argument)
+"
+"0","# tiff(""bridgePlot.tiff"", units=""in"", width=5, height=5, res=300)"
+"0","ggplot(dt_filtered, aes(Built_year, avgLength))+"
+"0","  geom_point()+"
+"0","  theme(axis.text.x=element_text(size = 3, angle=90))"
