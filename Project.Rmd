@@ -8,14 +8,15 @@ output: html_document
 ## Downlaod data
 ```{r}
 library("openxlsx")
-unemployment_raw <- read.csv("https://uwmadison.box.com/shared/static/f40h2voo1xyy27fjuicnir8ixsyi3scy.csv")
-education_raw <- read.csv("https://uwmadison.box.com/shared/static/kglpgoiyj5a4m72pjs844wr9ds8ff4ik.csv")
-population_raw <- read.csv("https://uwmadison.box.com/shared/static/9jui9wtnos28hay47ahw4uyn8xdmgq3s.csv")
-poverty_raw <- read.csv("https://uwmadison.box.com/shared/static/6c9x5ool6431pzs7z7xaecevsohgrdt7.csv")
-income_raw <- read.xlsx("https://uwmadison.box.com/shared/static/w8dw1soufv23s4yrpy1yav19899syr4y.xlsx")
-occupation1_raw <- read.xlsx("https://uwmadison.box.com/shared/static/stqnhnlftohzvrhj7yguy8krgy93e5oa.xlsx")
-occupation2_raw <- read.xlsx("https://uwmadison.box.com/shared/static/tt4q7u6usw9znej6l17sfoj4519kftef.xlsx")
-occuplink_raw <- read.xlsx("https://uwmadison.box.com/shared/static/86nf4xrhawcymq8mdsy8n4ib9icywd99.xlsx")
+unemployment_raw = read.csv("https://uwmadison.box.com/shared/static/f40h2voo1xyy27fjuicnir8ixsyi3scy.csv")
+education_raw = read.csv("https://uwmadison.box.com/shared/static/kglpgoiyj5a4m72pjs844wr9ds8ff4ik.csv")
+population_raw = read.csv("https://uwmadison.box.com/shared/static/9jui9wtnos28hay47ahw4uyn8xdmgq3s.csv")
+poverty_raw = read.csv("https://uwmadison.box.com/shared/static/6c9x5ool6431pzs7z7xaecevsohgrdt7.csv")
+income_raw = read.xlsx("https://uwmadison.box.com/shared/static/w8dw1soufv23s4yrpy1yav19899syr4y.xlsx")
+occupation1_raw = read.xlsx("https://uwmadison.box.com/shared/static/stqnhnlftohzvrhj7yguy8krgy93e5oa.xlsx")
+occupation2_raw = read.xlsx("https://uwmadison.box.com/shared/static/tt4q7u6usw9znej6l17sfoj4519kftef.xlsx")
+occuplink_raw = read.xlsx("https://uwmadison.box.com/shared/static/86nf4xrhawcymq8mdsy8n4ib9icywd99.xlsx")
+HPI_raw = read.xlsx("https://uwmadison.box.com/shared/static/imxwi9sx23fwr951uchy94o33f9f4vi1.xlsx")
 ```
 
 ## Clean up
@@ -24,36 +25,39 @@ library(dplyr)
 library(stringr)
 library(tidyverse)
 
-unemployment <- unemployment_raw %>% filter(str_detect(area_name, "County")) %>% separate(area_name, into = c("County", "State2"), sep = "\\s", extra = "merge") %>% separate(State2, c("County2","State"), sep = ", ") %>% pivot_wider(names_from = Attribute, values_from = Value) %>% select(State, County, Unemployment_rate_2019, Employed_2019)
+unemployment = unemployment_raw %>% filter(str_detect(area_name, "County")) %>% separate(area_name, into = c("County", "State2"), sep = "\\s", extra = "merge") %>% separate(State2, c("County2","State"), sep = ", ") %>% pivot_wider(names_from = Attribute, values_from = Value) %>% select(State, County, Unemployment_rate_2019, Employed_2019)
 
-education <- education_raw %>% filter(str_detect(Area.name, "County")) %>% separate(Area.name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% select(State, County, `Less.than.a.high.school.diploma..1970`:`Four.years.of.college.or.higher..1970`)
+education = education_raw %>% filter(str_detect(Area.name, "County")) %>% separate(Area.name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% select(State, County, `Less.than.a.high.school.diploma..1970`:`Four.years.of.college.or.higher..1970`)
 
-population <- population_raw %>% filter(str_detect(Area_Name, "County")) %>% separate(Area_Name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% select(State, county, POP_ESTIMATE_2019)
+population = population_raw %>% filter(str_detect(Area_Name, "County")) %>% separate(Area_Name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% select(State, county, POP_ESTIMATE_2019)
 
-poverty <- poverty_raw %>% filter(str_detect(Area_name, "County")) %>% separate(Area_name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% pivot_wider(names_from = Attribute, values_from = Value) %>% select(Stabr, County, POVALL_2019, PCTPOVALL_2019) %>% rename(State=Stabr)
+poverty = poverty_raw %>% filter(str_detect(Area_name, "County")) %>% separate(Area_name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% pivot_wider(names_from = Attribute, values_from = Value) %>% select(Stabr, County, POVALL_2019, PCTPOVALL_2019) %>% rename(State=Stabr)
 
-income_temp <- income_raw %>% rename(county = `Table.1..Per.Capita.Personal.Income.by.County,.2017.-.2019`) %>% rename(County = county, Income_2017=X2, Income_2018=X3, Income_2019=X4, Rank = X5) %>% select(County, Income_2019, Rank) %>% tail(-4)
+income_temp = income_raw %>% rename(county = `Table.1..Per.Capita.Personal.Income.by.County,.2017.-.2019`) %>% rename(County = county, Income_2017=X2, Income_2018=X3, Income_2019=X4, Rank = X5) %>% select(County, Income_2019, Rank) %>% tail(-4)
 for(i in 1:dim(income_temp)[1]){
   if(identical(income_temp[i,3],"--")){
     temp = income_temp[i,1]
   }
     income_temp[i,4] = temp
 }
-income <- income_temp %>% rename(State=V4) %>% filter(Rank != "--") %>% select(State, County, Income_2019)
+income = income_temp %>% rename(State=V4) %>% filter(Rank != "--") %>% select(State, County, Income_2019)
 income$State=state.abb[match(income$State, state.name)]
 
+HPI_temp = tail(HPI_raw, -4)
+colnames(HPI_temp)=HPI_temp[1,]
+HPI = HPI_temp %>% tail(-1) %>% filter(Year == "2019"&`HPI with 2000 base`!=".") %>% drop_na(`HPI with 2000 base`) %>% select(State, County, `HPI with 2000 base`)
 ```
 
 ```{r}
-occuplink <- occuplink_raw %>% rename(area_title = May.2019.MSA.name,
+occuplink = occuplink_raw %>% rename(area_title = May.2019.MSA.name,
                                   coun ="County.name.(or.Township.name.for.the.New.England.states)")
 
-occupation <- rbind(occupation1_raw, occupation2_raw)
+occupation = rbind(occupation1_raw, occupation2_raw)
 occupation$tot_emp = as.integer(occupation$tot_emp)
 
-occupation <- occupation_raw %>% filter(str_detect(occ_title, "Computer")) %>% left_join(occuplink, occupation, by = "area_title")
+occupation = occupation_raw %>% filter(str_detect(occ_title, "Computer")) %>% left_join(occuplink, occupation, by = "area_title")
 
-occupation <- occupation %>% select(coun, occ_title, tot_emp, FIPS.code, County.code) %>% unite(fipscode, FIPS.code, County.code, sep = "") %>% group_by(coun, fipscode) %>% summarise(value = sum(tot_emp, na.rm = TRUE))
+occupation = occupation %>% select(coun, occ_title, tot_emp, FIPS.code, County.code) %>% unite(fipscode, FIPS.code, County.code, sep = "") %>% group_by(coun, fipscode) %>% summarise(value = sum(tot_emp, na.rm = TRUE))
 
 
 ```
