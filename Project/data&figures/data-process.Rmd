@@ -26,35 +26,81 @@ library(stringr)
 library(tidyverse)
 
 # Clean up unemployment data
-unemployment = unemployment_raw %>% filter(str_detect(area_name, "County")) %>% separate(area_name, into = c("County", "State2"), sep = "\\s", extra = "merge") %>% separate(State2, c("County2","State"), sep = ", ") %>% pivot_wider(names_from = Attribute, values_from = Value) %>% select(State, County, Unemployment_rate_2019) %>% rename(Unemployment_Rate=Unemployment_rate_2019)
+unemployment = unemployment_raw %>% 
+  filter(str_detect(area_name, "County")) %>% 
+  separate(area_name, into = c("County", "State2"), sep = "\\s", extra = "merge") %>% 
+  separate(State2, c("County2","State"), sep = ", ") %>% 
+  pivot_wider(names_from = Attribute, values_from = Value) %>% 
+  select(State, County, Unemployment_rate_2019) %>% 
+  rename(Unemployment_Rate=Unemployment_rate_2019)
 
 # Clean up education data
-education = education_raw %>% filter(str_detect(Area.name, "County")) %>% separate(Area.name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% rename(HighSchoolLess=Percent.of.adults.with.less.than.a.high.school.diploma..2015.19, HighSchoolOnly=Percent.of.adults.with.a.high.school.diploma.only..2015.19, SomeCollege=Percent.of.adults.completing.some.college.or.associate.s.degree..2015.19, BachelorAndHigher=Percent.of.adults.with.a.bachelor.s.degree.or.higher..2015.19) %>% select(State, County, HighSchoolLess, HighSchoolOnly, SomeCollege, BachelorAndHigher)
+education = education_raw %>% 
+  filter(str_detect(Area.name, "County")) %>% 
+  separate(Area.name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>%
+  rename(HighSchoolLess=Percent.of.adults.with.less.than.a.high.school.diploma..2015.19, 
+         HighSchoolOnly=Percent.of.adults.with.a.high.school.diploma.only..2015.19, 
+         SomeCollege=Percent.of.adults.completing.some.college.or.associate.s.degree..2015.19, 
+         BachelorAndHigher=Percent.of.adults.with.a.bachelor.s.degree.or.higher..2015.19
+         ) %>% 
+  select(State, County, HighSchoolLess, HighSchoolOnly, SomeCollege, BachelorAndHigher)
 
 # Clean up population data
-population = population_raw %>% filter(str_detect(Area_Name, "County")) %>% separate(Area_Name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% select(State, County, POP_ESTIMATE_2019) %>% rename(Population=POP_ESTIMATE_2019)
+population = population_raw %>% 
+  filter(str_detect(Area_Name, "County")) %>% 
+  separate(Area_Name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% 
+  select(State, County, POP_ESTIMATE_2019) %>% 
+  rename(Population=POP_ESTIMATE_2019)
+
+population$Population=as.numeric(gsub(",","",population$Population))
 
 # Clean up poverty data
-poverty = poverty_raw %>% filter(str_detect(Area_name, "County")) %>% separate(Area_name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% pivot_wider(names_from = Attribute, values_from = Value) %>% select(Stabr, County, PCTPOVALL_2019) %>% rename(State=Stabr, Poverty_Percentage = PCTPOVALL_2019)
+poverty = poverty_raw %>% 
+  filter(str_detect(Area_name, "County")) %>% 
+  separate(Area_name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% 
+  pivot_wider(names_from = Attribute, values_from = Value) %>% select(Stabr, County, PCTPOVALL_2019) %>% 
+  rename(State=Stabr, 
+         Poverty_Percentage = PCTPOVALL_2019
+         )
 
 # Clean up income data
-income_temp = income_raw %>% rename(county = `Table.1..Per.Capita.Personal.Income.by.County,.2017.-.2019`) %>% rename(County = county, Income_2017=X2, Income_2018=X3, Income_2019=X4, Rank = X5) %>% select(County, Income_2019, Rank) %>% tail(-4) 
+income_temp = income_raw %>% 
+  rename(county = `Table.1..Per.Capita.Personal.Income.by.County,.2017.-.2019`) %>% 
+  rename(County = county, 
+         Income_2017=X2, 
+         Income_2018=X3, 
+         Income_2019=X4, 
+         Rank = X5) %>% 
+  select(County, Income_2019, Rank) %>% tail(-4) 
+
 for(i in 1:dim(income_temp)[1]){
   if(identical(income_temp[i,3],"--")){
     temp = income_temp[i,1]
   }
     income_temp[i,4] = temp
 }
-income = income_temp %>% rename(State=V4) %>% filter(Rank != "--") %>% select(State, County, Income_2019)%>% rename(Peronsal_Income = Income_2019)
+income = income_temp %>% 
+  rename(State=V4) %>% filter(Rank != "--") %>% 
+  select(State, County, Income_2019)%>% 
+  rename(Personal_Income = Income_2019)
+
 income$State=state.abb[match(income$State, state.name)]
 
 # Clean up HPI data
 HPI_temp = tail(HPI_raw, -4)
 colnames(HPI_temp)=HPI_temp[1,]
-HPI = HPI_temp %>% tail(-1) %>% filter(Year == "2019"&`HPI with 2000 base`!=".") %>% drop_na(`HPI with 2000 base`) %>% select(State, County, `HPI with 2000 base`) %>% rename(HPI='HPI with 2000 base')
+HPI = HPI_temp %>% tail(-1) %>% 
+  filter(Year == "2019"&`HPI with 2000 base`!=".") %>% 
+  drop_na(`HPI with 2000 base`) %>% select(State, County, `HPI with 2000 base`) %>% 
+  rename(HPI='HPI with 2000 base')
 
 # Join data together
-dt = HPI %>% left_join(income, by = c("State", "County"))  %>% left_join(poverty, by = c("State", "County"))  %>% left_join(population, by = c("State", "County"))  %>% left_join(education, by = c("State", "County"))  %>% left_join(unemployment, by = c("State", "County")) %>% drop_na()
+dt = HPI %>% 
+  left_join(income, by = c("State", "County"))  %>% 
+  left_join(poverty, by = c("State", "County"))  %>% 
+  left_join(population, by = c("State", "County"))  %>% 
+  left_join(education, by = c("State", "County"))  %>% 
+  left_join(unemployment, by = c("State", "County")) %>% drop_na()
 ```
 
 ```{r}
