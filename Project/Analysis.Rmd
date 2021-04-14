@@ -1,0 +1,49 @@
+---
+title: "Analysis"
+author: "Dingyi Li"
+date: "4/14/2021"
+output: html_document
+---
+# Multiple Linear Regression
+## Data preview
+### Read in data
+```{r}
+dt = read.csv("data&figures/dt.csv")
+summary(dt)
+```
+
+### Correlation Check
+#### Education parameters
+```{r}
+cor(scale(as.matrix(dt[,c(7,8,9,10)])))
+```
+### Histogram
+```{r}
+par(mfrow = c(2,3))
+hist(dt$HPI)
+hist(dt$Personal_Income)
+hist(dt$Poverty_Percentage)
+hist(dt$Population)
+hist(dt$Unemployment_Rate)
+```
+### Histogram for logtransformation
+```{r}
+par(mfrow = c(2,3))
+hist(log(dt$HPI))
+hist(log(dt$Personal_Income))
+hist(log(dt$Poverty_Percentage))
+hist(log(dt$Population))
+hist(log(dt$Unemployment_Rate))
+```
+
+## Model fitting
+```{r}
+attach(dt)
+m1 = lm(HPI~Personal_Income+Poverty_Percentage+Unemployment_Rate+Population+SomeCollege+BachelorAndHigher)
+summary(m1)
+```
+## Diagnostic Plots
+```{r}
+plot(m1)
+```
+

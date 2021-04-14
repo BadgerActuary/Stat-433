@@ -6,14 +6,14 @@ library(shinythemes)
 library(ggplot2)
 library(DT)
 
-dt <- read.csv("data&figures/dt.csv")
-us_states <- map_data("state")
-us_counties <- map_data("county")
+dt = read.csv("data&figures/dt.csv")
+us_states = map_data("state")
+us_counties = map_data("county")
 dt$State_Name = state.name[match(dt$State, state.abb)]
 dt$County_Name = tolower(dt$County)
 
 # User interface ----
-ui <- fluidPage(
+ui = shinyUI(fluidPage(
   navbarPage("Data visualization", 
     tabPanel("Examples of DataTables",
       sidebarLayout(
@@ -30,28 +30,26 @@ ui <- fluidPage(
                     column(4,selectInput("Cty","County:",c("All",unique(as.character(dt$County)))))
            ),
                           
-           tabsetPanel(tabPanel("data", 
-                                DT::dataTableOutput("table")
-                       )
-           )
+           
+           DT::dataTableOutput("table")
+            
         )
       )
     ),
              
-     tabPanel("County Map",
+    tabPanel("County Map",
       sidebarLayout(
         sidebarPanel(
           helpText("Create county maps given a selected variable in a state."),
                           
-          selectInput("var", 
-            label = "Variable",
+          selectInput("var","Variable",
             choices = c("HPI", "Personal_Income",
                         "Poverty_Percentage", "Population",
                         "HighSchoolLess", "HighSchoolOnly",
                         "SomeCollege", "BachelorAndHigher",
                         "Unemployment_Rate"),
                         selected = "HPI"
-            ),
+          ),
           selectInput("St",
                     "State:",
                     choices = unique(as.character(dt$State_Name)),
@@ -61,26 +59,26 @@ ui <- fluidPage(
         ),
        
       mainPanel(plotOutput("map"))
+     )
     )
-   )
   )
-)
+))
 
 # Server logic ----
-server <- function(input, output) {
-  output$table <- DT::renderDataTable(DT::datatable({
-    data=dt
+server = shinyServer(function(input, output) {
+  output$table = DT::renderDataTable(DT::datatable({
+    temp=dt
     if (input$St != "All") {
-      data <- data[data$State == input$St,]
+      temp = temp[temp$State == input$St,]
     }
     if (input$Cty != "All") {
-      data <- data[dt$County == input$Cty,]
+      temp = temp[temp$County == input$Cty,]
     }
-    data[, input$show_vars, drop = FALSE]
+    temp[, input$show_vars, drop = FALSE]
   }))
   
-  output$map <- renderPlot({
-    data <- switch(input$var, 
+  output$map = renderPlot({
+    data = switch(input$var, 
                    "HPI"=dt[,c(1,2,3,12,13)], 
                    "Personal_Income"=dt[,c(1,2,4,12,13)],
                    "Poverty_Percentage"=dt[,c(1,2,5,12,13)], 
@@ -102,7 +100,7 @@ server <- function(input, output) {
     
     plot_dt = inner_join(State_county, data[which(dt$State_Name == input$St),], by = c("subregion"="County_Name"))
     
-    ditch_the_axes <- theme(
+    ditch_the_axes = theme(
       axis.text = element_blank(),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
@@ -111,16 +109,15 @@ server <- function(input, output) {
       axis.title = element_blank()
     )
     
-    county_plot <- State_base + 
+    State_base + 
       geom_polygon(data = plot_dt, aes(fill = plot_dt[,var]), color = "white") +
       geom_polygon(color = "black", fill = NA) +
       theme_bw() +
       ditch_the_axes + 
       guides(fill=guide_legend(title=var))
-    
-    print(county_plot)
+
   })
-}
+})
 
 # Run app ----
 shinyApp(ui=ui, server)
