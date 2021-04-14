@@ -19,12 +19,14 @@ cor(scale(as.matrix(dt[,c(7,8,9,10)])))
 ```
 ### Histogram
 ```{r}
-par(mfrow = c(2,3))
+par(mfrow = c(3,3))
 hist(dt$HPI)
 hist(dt$Personal_Income)
 hist(dt$Poverty_Percentage)
 hist(dt$Population)
 hist(dt$Unemployment_Rate)
+hist(dt$BachelorAndHigher)
+hist(dt$SomeCollege)
 ```
 ### Histogram for logtransformation
 ```{r}
@@ -34,12 +36,13 @@ hist(log(dt$Personal_Income))
 hist(log(dt$Poverty_Percentage))
 hist(log(dt$Population))
 hist(log(dt$Unemployment_Rate))
+hist(log(dt$BachelorAndHigher))
 ```
 
 ## Model fitting
 ```{r}
 attach(dt)
-m1 = lm(HPI~Personal_Income+Poverty_Percentage+Unemployment_Rate+Population+SomeCollege+BachelorAndHigher)
+m1 = lm(log(HPI)~log(Personal_Income)+log(Poverty_Percentage)+log(Unemployment_Rate)+log(Population)+SomeCollege+log(BachelorAndHigher))
 summary(m1)
 ```
 ## Diagnostic Plots
