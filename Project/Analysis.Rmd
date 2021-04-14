@@ -2,7 +2,9 @@
 title: "Analysis"
 author: "Dingyi Li"
 date: "4/14/2021"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 # Multiple Linear Regression
 ## Data preview
