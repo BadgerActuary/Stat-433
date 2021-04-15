@@ -107,7 +107,7 @@ server = function(input, output) {
     
     ggplot(data = inputState, mapping = aes(x = long, y = lat, group = group)) + 
       coord_fixed(1.3) + 
-      geom_polygon(cggplolor = "black", fill = "gray")+ 
+      geom_polygon(fill = "white")+ 
       geom_polygon(data = plot_dt, aes(fill = plot_dt[,var]), color = "white") +
       geom_polygon(color = "black", fill = NA) +
       theme_bw() +
