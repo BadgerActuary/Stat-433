@@ -13,7 +13,7 @@ dt$State_Name = state.name[match(dt$State, state.abb)]
 dt$County_Name = tolower(dt$County)
 
 # User interface ----
-ui = shinyUI(fluidPage(
+ui = fluidPage(
   navbarPage("Data visualization", 
     tabPanel("Examples of DataTables",
       sidebarLayout(
@@ -31,7 +31,7 @@ ui = shinyUI(fluidPage(
            ),
                           
            
-           DT::dataTableOutput("table")
+           DT::dataTableOutput("myTable")
             
         )
       )
@@ -50,7 +50,7 @@ ui = shinyUI(fluidPage(
                         "Unemployment_Rate"),
                         selected = "HPI"
           ),
-          selectInput("St",
+          selectInput("St2",
                     "State:",
                     choices = unique(as.character(dt$State_Name)),
                     selected = "Alabama"
@@ -58,15 +58,15 @@ ui = shinyUI(fluidPage(
           width=2
         ),
        
-      mainPanel(plotOutput("map"))
+      mainPanel(plotOutput("myMap"))
      )
     )
   )
-))
+)
 
 # Server logic ----
-server = shinyServer(function(input, output) {
-  output$table = DT::renderDataTable(DT::datatable({
+server = function(input, output) {
+  output$myTable = DT::renderDataTable(DT::datatable({
     temp=dt
     if (input$St != "All") {
       temp = temp[temp$State == input$St,]
@@ -77,7 +77,7 @@ server = shinyServer(function(input, output) {
     temp[, input$show_vars, drop = FALSE]
   }))
   
-  output$map = renderPlot({
+  output$myMap = renderPlot({
     data = switch(input$var, 
                    "HPI"=dt[,c(1,2,3,12,13)], 
                    "Personal_Income"=dt[,c(1,2,4,12,13)],
@@ -91,14 +91,10 @@ server = shinyServer(function(input, output) {
     )
     var = input$var
     
-    inputState = subset(us_states, region == tolower(input$St))
-    State_county = subset(us_counties, region == tolower(input$St))
+    inputState = subset(us_states, region == tolower(input$St2))
+    State_county = subset(us_counties, region == tolower(input$St2))
     
-    State_base = ggplot(data = inputState, mapping = aes(x = long, y = lat, group = group)) + 
-      coord_fixed(1.3) + 
-      geom_polygon(color = "black", fill = "gray")
-    
-    plot_dt = inner_join(State_county, data[which(dt$State_Name == input$St),], by = c("subregion"="County_Name"))
+    plot_dt = inner_join(State_county, data[which(dt$State_Name == input$St2),], by = c("subregion"="County_Name"))
     
     ditch_the_axes = theme(
       axis.text = element_blank(),
@@ -109,7 +105,9 @@ server = shinyServer(function(input, output) {
       axis.title = element_blank()
     )
     
-    State_base + 
+    ggplot(data = inputState, mapping = aes(x = long, y = lat, group = group)) + 
+      coord_fixed(1.3) + 
+      geom_polygon(cggplolor = "black", fill = "gray")+ 
       geom_polygon(data = plot_dt, aes(fill = plot_dt[,var]), color = "white") +
       geom_polygon(color = "black", fill = NA) +
       theme_bw() +
@@ -117,7 +115,7 @@ server = shinyServer(function(input, output) {
       guides(fill=guide_legend(title=var))
 
   })
-})
+}
 
 # Run app ----
 shinyApp(ui=ui, server)
