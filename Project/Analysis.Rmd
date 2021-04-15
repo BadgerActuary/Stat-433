@@ -21,24 +21,52 @@ cor(scale(as.matrix(dt[,c(7,8,9,10)])))
 ```
 ### Histogram
 ```{r}
-par(mfrow = c(3,3))
-hist(dt$HPI)
-hist(dt$Personal_Income)
-hist(dt$Poverty_Percentage)
-hist(dt$Population)
-hist(dt$Unemployment_Rate)
-hist(dt$BachelorAndHigher)
-hist(dt$SomeCollege)
+library(ggpubr)
+a<-ggdensity(dt, x = "Unemployment_Rate", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+b<-ggdensity(dt, x = "Population", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+c<-ggdensity(dt, x = "Poverty_Percentage", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+d<-ggdensity(dt, x = "Personal_Income", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+e<-ggdensity(dt, x = "HPI", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+f<-ggdensity(dt, x = "SomeCollege", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+g<-ggdensity(dt, x = "BachelorAndHigher", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+ggarrange(a,b,c,d,e,f,g, ncol = 3, nrow = 3)
 ```
 ### Histogram for logtransformation
 ```{r}
-par(mfrow = c(2,3))
-hist(log(dt$HPI))
-hist(log(dt$Personal_Income))
-hist(log(dt$Poverty_Percentage))
-hist(log(dt$Population))
-hist(log(dt$Unemployment_Rate))
-hist(log(dt$BachelorAndHigher))
+temp=dt
+temp$HPI <- log(dt$HPI)
+temp$Personal_Income <- log(dt$Personal_Income)
+temp$Poverty_Percentage <- log(dt$Poverty_Percentage)
+temp$Population <- log(dt$Population)
+temp$HighSchoolLess <- log(dt$HighSchoolLess)
+temp$BachelorAndHigher <- log(dt$BachelorAndHigher)
+temp$Unemployment_Rate <- log(dt$Unemployment_Rate)
+```
+
+```{r}
+library(ggpubr)
+a<-ggdensity(temp, x = "Unemployment_Rate", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+b<-ggdensity(temp, x = "Population", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+c<-ggdensity(temp, x = "Poverty_Percentage", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+d<-ggdensity(temp, x = "Personal_Income", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+e<-ggdensity(temp, x = "HPI", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+f<-ggdensity(temp, x = "SomeCollege", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+g<-ggdensity(temp, x = "BachelorAndHigher", fill = "lightgray") +
+  stat_overlay_normal_density(color = "red", linetype = "dashed")
+ggarrange(a,b,c,d,e,f,g, ncol = 3, nrow = 3)
 ```
 
 ## Model fitting
