@@ -18,7 +18,7 @@ ui = fluidPage(
     tabPanel("Examples of DataTables",
       sidebarLayout(
         sidebarPanel(
-          checkboxGroupInput("show_vars", "Columns in diamonds to show:",
+          checkboxGroupInput("show_vars", "Columns in dataset to show:",
                               names(dt), 
                               selected = names(dt)
           ), 
@@ -53,7 +53,13 @@ ui = fluidPage(
           selectInput("St2",
                     "State:",
                     choices = unique(as.character(dt$State_Name)),
-                    selected = "Alabama"
+                    selected = "Wisconsin"
+          ),
+          selectInput("overlap",
+                      "Check overlap",
+                      choices = c("TRUE","FALSE"),
+                      selected = "TRUE"
+            
           ),
           width=2
         ),
@@ -105,16 +111,23 @@ server = function(input, output) {
       axis.title = element_blank()
     )
     
+    cnames = aggregate(cbind(long,lat)~subregion, data=State_county,
+                       FUN=function(x)mean(range(x)))
+    
     ggplot(data = inputState, mapping = aes(x = long, y = lat, group = group)) + 
       coord_fixed(1.3) + 
       geom_polygon(fill = "white")+ 
-      geom_polygon(data = plot_dt, aes(fill = plot_dt[,var]), color = "white") +
+      geom_polygon(data = plot_dt, aes(fill = plot_dt[,var]), color = "grey") +
+      scale_fill_distiller(palette = "Blues", trans = "reverse")+
+      geom_text(data=cnames, aes(long, lat, label = subregion, group=subregion), color = "black", size=5,check_overlap = input$overlap)+
       geom_polygon(color = "black", fill = NA) +
       theme_bw() +
       ditch_the_axes + 
       guides(fill=guide_legend(title=var))
 
-  })
+  },
+  height = 1000, width = 1500
+  )
 }
 
 # Run app ----

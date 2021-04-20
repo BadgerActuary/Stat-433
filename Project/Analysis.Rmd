@@ -36,7 +36,7 @@ f<-ggdensity(dt, x = "SomeCollege", fill = "lightgray") +
   stat_overlay_normal_density(color = "red", linetype = "dashed")
 g<-ggdensity(dt, x = "BachelorAndHigher", fill = "lightgray") +
   stat_overlay_normal_density(color = "red", linetype = "dashed")
-ggarrange(a,b,c,d,e,f,g, ncol = 3, nrow = 3)
+ggarrange(a,b,c,d,e,f,g, ncol = 2, nrow = 4)
 ```
 ### Histogram for logtransformation
 ```{r}
@@ -66,13 +66,12 @@ f<-ggdensity(temp, x = "SomeCollege", fill = "lightgray") +
   stat_overlay_normal_density(color = "red", linetype = "dashed")
 g<-ggdensity(temp, x = "BachelorAndHigher", fill = "lightgray") +
   stat_overlay_normal_density(color = "red", linetype = "dashed")
-ggarrange(a,b,c,d,e,f,g, ncol = 3, nrow = 3)
+ggarrange(a,b,c,d,e,f,g, ncol = 2, nrow = 4)
 ```
 
 ## Model fitting
 ```{r}
-attach(dt)
-m1 = lm(log(HPI)~log(Personal_Income)+log(Poverty_Percentage)+log(Unemployment_Rate)+log(Population)+SomeCollege+log(BachelorAndHigher))
+m1 = lm(log(dt$HPI)~log(dt$Personal_Income)+log(dt$Poverty_Percentage)+log(dt$Unemployment_Rate)+log(dt$Population)+dt$SomeCollege+log(dt$BachelorAndHigher))
 summary(m1)
 ```
 ## Diagnostic Plots

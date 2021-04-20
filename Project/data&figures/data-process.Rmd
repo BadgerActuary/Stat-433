@@ -28,16 +28,16 @@ library(tidyverse)
 # Clean up unemployment data
 unemployment = unemployment_raw %>% 
   filter(str_detect(area_name, "County")) %>% 
-  separate(area_name, into = c("County", "State2"), sep = "\\s", extra = "merge") %>% 
-  separate(State2, c("County2","State"), sep = ", ") %>% 
+  separate(area_name, into = c("County", "State2"), sep = " C", extra = "merge") %>% 
+  # separate(State2, c("County2","State"), sep = ", ") %>% 
   pivot_wider(names_from = Attribute, values_from = Value) %>% 
-  select(State, County, Unemployment_rate_2019) %>% 
-  rename(Unemployment_Rate=Unemployment_rate_2019)
+  select(Stabr, County, Unemployment_rate_2019) %>% 
+  rename(Unemployment_Rate=Unemployment_rate_2019, State = Stabr)
 
 # Clean up education data
 education = education_raw %>% 
   filter(str_detect(Area.name, "County")) %>% 
-  separate(Area.name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>%
+  separate(Area.name, into = c("County", "County2"), sep = " C", extra = "merge") %>%
   rename(HighSchoolLess=Percent.of.adults.with.less.than.a.high.school.diploma..2015.19, 
          HighSchoolOnly=Percent.of.adults.with.a.high.school.diploma.only..2015.19, 
          SomeCollege=Percent.of.adults.completing.some.college.or.associate.s.degree..2015.19, 
@@ -48,7 +48,7 @@ education = education_raw %>%
 # Clean up population data
 population = population_raw %>% 
   filter(str_detect(Area_Name, "County")) %>% 
-  separate(Area_Name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% 
+  separate(Area_Name, into = c("County", "County2"), sep = " C", extra = "merge") %>% 
   select(State, County, POP_ESTIMATE_2019) %>% 
   rename(Population=POP_ESTIMATE_2019)
 
@@ -57,7 +57,7 @@ population$Population=as.numeric(gsub(",","",population$Population))
 # Clean up poverty data
 poverty = poverty_raw %>% 
   filter(str_detect(Area_name, "County")) %>% 
-  separate(Area_name, into = c("County", "County2"), sep = "\\s", extra = "merge") %>% 
+  separate(Area_name, into = c("County", "County2"), sep = " C", extra = "merge") %>% 
   pivot_wider(names_from = Attribute, values_from = Value) %>% select(Stabr, County, PCTPOVALL_2019) %>% 
   rename(State=Stabr, 
          Poverty_Percentage = PCTPOVALL_2019
