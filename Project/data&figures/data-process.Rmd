@@ -90,9 +90,8 @@ income$State=state.abb[match(income$State, state.name)]
 HPI_temp = tail(HPI_raw, -4)
 colnames(HPI_temp)=HPI_temp[1,]
 HPI = HPI_temp %>% tail(-1) %>% 
-  filter(Year == "2019"&`HPI with 2000 base`!=".") %>% 
-  drop_na(`HPI with 2000 base`) %>% select(State, County, `HPI with 2000 base`) %>% 
-  rename(HPI='HPI with 2000 base')
+  filter(Year == "2019"&`HPI`!=".") %>% 
+  drop_na(HPI) %>% select(State, County, HPI) 
 
 # Join data together
 dt = HPI %>% 
