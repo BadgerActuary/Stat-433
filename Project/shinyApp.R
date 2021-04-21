@@ -78,10 +78,6 @@ ui = fluidPage(
         ),
        
       mainPanel(
-        # fluidRow(
-        #   column(4,plotOutput("Map1")),
-        #   column(12,plotOutput("Map2"))
-        # )
         fluidRow(
           splitLayout(cellWidths = c("33%", "33%","33%"), plotOutput("Map1"), plotOutput("Map2"), plotOutput("Scatter"))
         )
@@ -144,7 +140,8 @@ server = function(input, output) {
       geom_polygon(color = "black", fill = NA) +
       theme_bw() +
       ditch_the_axes + 
-      guides(fill=guide_legend(title=var))
+      guides(fill=guide_legend(title=var))+
+      labs(title = input$var1)
 
   },
   height = 400, width = 550
@@ -190,7 +187,8 @@ server = function(input, output) {
       geom_polygon(color = "black", fill = NA) +
       theme_bw() +
       ditch_the_axes + 
-      guides(fill=guide_legend(title=var))
+      guides(fill=guide_legend(title=var))+
+      labs(title = input$var2)
     
   },
   height = 400, width = 550
