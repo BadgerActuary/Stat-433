@@ -79,3 +79,7 @@ summary(m1)
 plot(m1)
 ```
 
+```{r}
+car::vif(m1)
+```
+
