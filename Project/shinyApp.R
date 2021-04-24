@@ -213,7 +213,7 @@ server = function(input, output) {
                   "Population"=dt[which(dt$State_Name == input$St2),c(6)],
                   "HighSchoolLess"=dt[which(dt$State_Name == input$St2),c(7)], 
                   "HighSchoolOnly"=dt[which(dt$State_Name == input$St2),c(8)],
-                  "SomeCollege"=dt[which(dt$State_Name == input$St),c(9)], 
+                  "SomeCollege"=dt[which(dt$State_Name == input$St2),c(9)], 
                   "BachelorAndHigher"=dt[which(dt$State_Name == input$St2),c(10)],
                   "Unemployment_Rate"=dt[which(dt$State_Name == input$St2),c(11)]
     )
