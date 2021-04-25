@@ -24,54 +24,81 @@ HPI_raw = read.xlsx("https://uwmadison.box.com/shared/static/imxwi9sx23fwr951uch
 library(dplyr)
 library(stringr)
 library(tidyverse)
+library(gdata)
 
 # Clean up unemployment data
 unemployment = unemployment_raw %>% 
-  filter(str_detect(area_name, "County")) %>% 
-  separate(area_name, into = c("County", "State2"), sep = " County", extra = "merge") %>% 
-  # separate(State2, c("County2","State"), sep = ", ") %>% 
   pivot_wider(names_from = Attribute, values_from = Value) %>% 
+  separate(area_name, into = c("County1", "State2"), sep = " County", extra = "merge") %>% 
+  separate(County1, into = c("County2", "State3"), sep = ",", extra = "merge") %>% 
+  separate(County2, into = c("County3", "State3"), sep = "Parish", extra = "merge") %>% 
+  separate(County3, into = c("County", "State3"), sep = " Borough", extra = "merge") %>% 
   select(Stabr, County, Unemployment_rate_2019) %>% 
-  rename(Unemployment_Rate=Unemployment_rate_2019, State = Stabr)
+  rename(Unemployment_Rate=Unemployment_rate_2019, State = Stabr) %>% 
+  filter(!str_detect(State, "DC") & !str_detect(State, "PR") ) %>% 
+  tail(-1) 
+unemployment[86,2]<-"Matanuska Susitna"
+unemployment$County=trim(unemployment$County)
 
 # Clean up education data
 education = education_raw %>% 
-  filter(str_detect(Area.name, "County")) %>% 
-  separate(Area.name, into = c("County", "County2"), sep = " County", extra = "merge") %>%
+  separate(Area.name, into = c("County1", "County2"), sep = " County", extra = "merge") %>%
+  separate(County1, into = c("County2", "State3"), sep = "Parish", extra = "merge") %>% 
+  separate(County2, into = c("County", "State3"), sep = " Borough", extra = "merge") %>% 
   rename(HighSchoolLess=Percent.of.adults.with.less.than.a.high.school.diploma..2015.19, 
          HighSchoolOnly=Percent.of.adults.with.a.high.school.diploma.only..2015.19, 
          SomeCollege=Percent.of.adults.completing.some.college.or.associate.s.degree..2015.19, 
          BachelorAndHigher=Percent.of.adults.with.a.bachelor.s.degree.or.higher..2015.19
          ) %>% 
-  select(State, County, HighSchoolLess, HighSchoolOnly, SomeCollege, BachelorAndHigher)
+  select(State, County, HighSchoolLess, HighSchoolOnly, SomeCollege, BachelorAndHigher) %>% 
+  filter(!str_detect(State, "DC") & !str_detect(State, "PR") ) %>% 
+  tail(-1) 
+education[73,2]<-"Anchorage"
+education[81,2]<-"Juneau"
+education[88,2]<-"Matanuska Susitna"
+education[95,2]<-"Sitka"
+education$County=trim(education$County)
 
 # Clean up population data
 population = population_raw %>% 
-  filter(str_detect(Area_Name, "County")) %>% 
-  separate(Area_Name, into = c("County", "County2"), sep = " County", extra = "merge") %>% 
+  separate(Area_Name, into = c("County1", "County2"), sep = " County", extra = "merge") %>% 
+  separate(County1, into = c("County2", "State3"), sep = "Parish", extra = "merge") %>% 
+  separate(County2, into = c("County", "State3"), sep = " Borough", extra = "merge") %>% 
   select(State, County, POP_ESTIMATE_2019) %>% 
-  rename(Population=POP_ESTIMATE_2019)
+  rename(Population=POP_ESTIMATE_2019) %>% 
+  filter(!str_detect(State, "DC") & !str_detect(State, "PR") ) %>% 
+  tail(-1) 
+population[72,2]<-"Anchorage"
+population[80,2]<-"Juneau"
+population[86,2]<-"Matanuska Susitna"
+population[92,2]<-"Sitka"
 
+population$County=trim(population$County)
 population$Population=as.numeric(gsub(",","",population$Population))
 
 # Clean up poverty data
 poverty = poverty_raw %>% 
-  filter(str_detect(Area_name, "County")) %>% 
-  separate(Area_name, into = c("County", "County2"), sep = " County", extra = "merge") %>% 
+  separate(Area_name, into = c("County1", "County2"), sep = " County", extra = "merge") %>% 
+  separate(County1, into = c("County2", "State3"), sep = "Parish", extra = "merge") %>% 
+  separate(County2, into = c("County", "State3"), sep = " Borough", extra = "merge") %>% 
   pivot_wider(names_from = Attribute, values_from = Value) %>% select(Stabr, County, PCTPOVALL_2019) %>% 
   rename(State=Stabr, 
          Poverty_Percentage = PCTPOVALL_2019
-         )
+         ) %>% 
+  filter(!str_detect(State, "DC")) %>% 
+  tail(-1) 
+poverty[86,2]<-"Matanuska Susitna"
+
+poverty$County=trim(poverty$County)
 
 # Clean up income data
 income_temp = income_raw %>% 
-  rename(county = `Table.1..Per.Capita.Personal.Income.by.County,.2017.-.2019`) %>% 
-  rename(County = county, 
-         Income_2017=X2, 
-         Income_2018=X3, 
+  rename(County1=`Table.1..Per.Capita.Personal.Income.by.County,.2017.-.2019`，
          Income_2019=X4, 
          Rank = X5) %>% 
-  select(County, Income_2019, Rank) %>% tail(-4) 
+  separate(County1, into = c("County", "State3"), sep = " Borough", extra = "merge") %>% 
+  select(County, Income_2019, Rank) %>% 
+  tail(-4) 
 
 for(i in 1:dim(income_temp)[1]){
   if(identical(income_temp[i,3],"--")){
@@ -80,38 +107,35 @@ for(i in 1:dim(income_temp)[1]){
     income_temp[i,4] = temp
 }
 income = income_temp %>% 
-  rename(State=V4) %>% filter(Rank != "--") %>% 
-  select(State, County, Income_2019)%>% 
+  rename(State=V4) %>% 
+  filter(Rank != "--") %>% 
+  select(State, County, Income_2019) %>% 
   rename(Personal_Income = Income_2019)
 
+income[70,2]<-"Anchorage"
+income[78,2]<-"Juneau"
+income[84,2]<-"Matanuska Susitna"
+income[90,2]<-"Sitka"
+
 income$State=state.abb[match(income$State, state.name)]
+income$County=trim(income$County)
 
 # Clean up HPI data
 HPI_temp = tail(HPI_raw, -4)
 colnames(HPI_temp)=HPI_temp[1,]
 HPI = HPI_temp %>% tail(-1) %>% 
   filter(Year == "2019"&`HPI`!=".") %>% 
-  drop_na(HPI) %>% select(State, County, HPI) 
+  select(State, County, HPI)
+HPI$County=trim(HPI$County)
+
 
 # Join data together
 dt = HPI %>% 
-  left_join(income, by = c("State", "County"))  %>% 
-  left_join(poverty, by = c("State", "County"))  %>% 
-  left_join(population, by = c("State", "County"))  %>% 
-  left_join(education, by = c("State", "County"))  %>% 
-  left_join(unemployment, by = c("State", "County")) %>% drop_na()
-```
-
-```{r}
-# occuplink = occuplink_raw %>% rename(area_title = May.2019.MSA.name,
-#                                   coun ="County.name.(or.Township.name.for.the.New.England.states)")
-# 
-# occupation = rbind(occupation1_raw, occupation2_raw)
-# occupation$tot_emp = as.integer(occupation$tot_emp)
-# 
-# occupation = occupation_raw %>% filter(str_detect(occ_title, "Computer")) %>% left_join(occuplink, occupation, by = "area_title")
-# 
-# occupation = occupation %>% select(coun, occ_title, tot_emp, FIPS.code, County.code) %>% unite(fipscode, FIPS.code, County.code, sep = "") %>% group_by(coun, fipscode) %>% summarise(value = sum(tot_emp, na.rm = TRUE))
+  full_join(income, by = c("State", "County"))  %>% 
+  full_join(poverty, by = c("State", "County"))  %>% 
+  full_join(population, by = c("State", "County"))  %>% 
+  full_join(education, by = c("State", "County"))  %>% 
+  full_join(unemployment, by = c("State", "County")) %>% drop_na()
 ```
 
 ```{r}
