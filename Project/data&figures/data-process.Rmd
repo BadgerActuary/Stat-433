@@ -14,8 +14,8 @@ population_raw = read.csv("https://uwmadison.box.com/shared/static/9jui9wtnos28h
 poverty_raw = read.csv("https://uwmadison.box.com/shared/static/6c9x5ool6431pzs7z7xaecevsohgrdt7.csv")
 income_raw = read.xlsx("https://uwmadison.box.com/shared/static/w8dw1soufv23s4yrpy1yav19899syr4y.xlsx")
 occupation1_raw = read.xlsx("https://uwmadison.box.com/shared/static/stqnhnlftohzvrhj7yguy8krgy93e5oa.xlsx")
-occupation2_raw = read.xlsx("https://uwmadison.box.com/shared/static/tt4q7u6usw9znej6l17sfoj4519kftef.xlsx")
-occuplink_raw = read.xlsx("https://uwmadison.box.com/shared/static/86nf4xrhawcymq8mdsy8n4ib9icywd99.xlsx")
+# occupation2_raw = read.xlsx("https://uwmadison.box.com/shared/static/tt4q7u6usw9znej6l17sfoj4519kftef.xlsx")
+# occuplink_raw = read.xlsx("https://uwmadison.box.com/shared/static/86nf4xrhawcymq8mdsy8n4ib9icywd99.xlsx")
 HPI_raw = read.xlsx("https://uwmadison.box.com/shared/static/imxwi9sx23fwr951uchy94o33f9f4vi1.xlsx")
 ```
 

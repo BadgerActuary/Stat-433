@@ -87,8 +87,8 @@ car::vif(m1)
 ```{r, fig.dim = c(12,6)}
 library(dplyr)
 library(corrplot)
-dt <- df %>% select(HighSchoolLess:BachelorAndHigher)
-res <- cor(dt)
+df <- dt %>% dplyr::select(HighSchoolLess:BachelorAndHigher)
+res <- cor(df)
 
 corrplot(res, type = "upper", order = "hclust", 
          tl.col = "black", tl.srt = 45)
@@ -97,7 +97,8 @@ corrplot(res, type = "upper", order = "hclust",
 ## old pca
 ```{r}
 library("tidymodels")
-pca_rec <- recipe(HPI ~., data = df) %>%
+library(forcats)
+pca_rec <- recipe(HPI ~., data = dt) %>%
   update_role(State, County, SomeCollege, new_role = "id") %>%
   step_normalize(all_predictors()) %>% 
   step_pca(all_predictors())
@@ -127,7 +128,7 @@ juice(pca_prep) %>%
 ```{r}
 library(MASS)
 # Fit the full model 
-full.model <- lm(HPI ~ Personal_Income + Poverty_Percentage + Population + HighSchoolLess + HighSchoolOnly + SomeCollege + BachelorAndHigher + Unemployment_Rate, data=df)
+full.model <- lm(HPI ~ Personal_Income + Poverty_Percentage + Population + HighSchoolLess + HighSchoolOnly + SomeCollege + BachelorAndHigher + Unemployment_Rate, data=dt)
 # Stepwise regression model
 step.model <- stepAIC(full.model, direction = "both", 
                       trace = FALSE)
