@@ -83,3 +83,53 @@ plot(m1)
 car::vif(m1)
 ```
 
+## correlation plot
+```{r, fig.dim = c(12,6)}
+library(dplyr)
+library(corrplot)
+dt <- df %>% select(HighSchoolLess:BachelorAndHigher)
+res <- cor(dt)
+
+corrplot(res, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+```
+
+## old pca
+```{r}
+library("tidymodels")
+pca_rec <- recipe(HPI ~., data = df) %>%
+  update_role(State, County, SomeCollege, new_role = "id") %>%
+  step_normalize(all_predictors()) %>% 
+  step_pca(all_predictors())
+
+pca_prep <- prep(pca_rec)
+tidied_pca <- tidy(pca_prep, 2)
+
+tidied_pca %>%
+  filter(component %in% paste0("PC", 1:7)) %>%
+  mutate(component = fct_inorder(component)) %>%
+  ggplot(aes(value, terms, fill = terms)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~component, nrow = 1) +
+  labs(y = NULL)
+```
+
+
+```{r}
+juice(pca_prep) %>%
+  ggplot(aes(PC1, PC2, label = County)) +
+  geom_point(aes(color = State), alpha = 0.7, size = 2) +
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL)
+```
+
+## stepwise regression
+```{r}
+library(MASS)
+# Fit the full model 
+full.model <- lm(HPI ~ Personal_Income + Poverty_Percentage + Population + HighSchoolLess + HighSchoolOnly + SomeCollege + BachelorAndHigher + Unemployment_Rate, data=df)
+# Stepwise regression model
+step.model <- stepAIC(full.model, direction = "both", 
+                      trace = FALSE)
+summary(step.model)
+```
