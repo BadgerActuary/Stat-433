@@ -5,6 +5,7 @@ library(shiny)
 library(shinythemes)
 library(ggplot2)
 library(DT)
+library(plotly)
 
 dt = read.csv("data&figures/dt.csv")
 us_states = map_data("state")
@@ -79,8 +80,11 @@ ui = fluidPage(
        
       mainPanel(
         fluidRow(
-          splitLayout(cellWidths = c("33%", "33%","33%"), plotOutput("Map1"), plotOutput("Map2"), plotOutput("Scatter"))
-        )
+          # column(3,plotlyOutput("Map1")),
+          # column(9,plotlyOutput("Map2"))
+          splitLayout(cellWidths = c("50%","50%"), plotlyOutput("Map1"), plotlyOutput("Map2"))
+          
+        ), fluidRow(plotOutput("Scatter"))
       )
      )
     )
@@ -100,7 +104,7 @@ server = function(input, output) {
     temp[, input$show_vars, drop = FALSE]
   }))
   
-  output$Map1 = renderPlot({
+  output$Map1 = renderPlotly({
     data = switch(input$var1, 
                    "HPI"=dt[,c(1,2,3,12,13)], 
                    "Personal_Income"=dt[,c(1,2,4,12,13)],
@@ -130,24 +134,35 @@ server = function(input, output) {
     
     cnames = aggregate(cbind(long,lat)~subregion, data=State_county,
                        FUN=function(x)mean(range(x)))
+    m <- list(
+      l = 50,
+      r = 50,
+      b = 100,
+      t = 100,
+      pad = 4
+    )
     
-    ggplot(data = inputState, mapping = aes(x = long, y = lat, group = group)) + 
+    var1 = plot_dt[,var]
+    p=ggplot(data = inputState, mapping = aes(x = long, y = lat, group = group)) + 
       coord_fixed(1.3) + 
       geom_polygon(fill = "white")+ 
-      geom_polygon(data = plot_dt, aes(fill = plot_dt[,var]), color = "grey") +
+      geom_polygon(data = plot_dt, aes(fill = var1), color = "grey") +
       scale_fill_distiller(palette = "Blues", trans = "reverse")+
       geom_text(data=cnames, aes(long, lat, label = subregion, group=subregion), color = "black", size=as.numeric(input$size),check_overlap = input$overlap)+
       geom_polygon(color = "black", fill = NA) +
       theme_bw() +
-      ditch_the_axes + 
-      guides(fill=guide_legend(title=var))+
-      labs(title = input$var1)
-
-  },
-  height = 400, width = 550
-  )
+      ditch_the_axes 
+    
+    ggplotly(p) %>%
+      layout(autosize = F, width = 600, height = 600, margin = m) %>% 
+      colorbar(title = var) %>% 
+      add_markers(
+        text = ~paste(subregion, input$St2, var1)
+      )
+    
+  })
   
-  output$Map2 = renderPlot({
+  output$Map2 = renderPlotly({
     data = switch(input$var2, 
                   "HPI"=dt[,c(1,2,3,12,13)], 
                   "Personal_Income"=dt[,c(1,2,4,12,13)],
@@ -177,22 +192,31 @@ server = function(input, output) {
     
     cnames = aggregate(cbind(long,lat)~subregion, data=State_county,
                        FUN=function(x)mean(range(x)))
+    m <- list(
+      l = 50,
+      r = 50,
+      b = 100,
+      t = 100,
+      pad = 4
+    )
     
-    ggplot(data = inputState, mapping = aes(x = long, y = lat, group = group)) + 
+    var2 = plot_dt[,var]
+    
+    p=ggplot(data = inputState, mapping = aes(x = long, y = lat, group = group)) + 
       coord_fixed(1.3) + 
       geom_polygon(fill = "white")+ 
-      geom_polygon(data = plot_dt, aes(fill = plot_dt[,var]), color = "grey") +
+      geom_polygon(data = plot_dt, aes(fill = var2), color = "grey") +
       scale_fill_distiller(palette = "Blues", trans = "reverse")+
       geom_text(data=cnames, aes(long, lat, label = subregion, group=subregion), color = "black", size=as.numeric(input$size),check_overlap = input$overlap)+
       geom_polygon(color = "black", fill = NA) +
       theme_bw() +
-      ditch_the_axes + 
-      guides(fill=guide_legend(title=var))+
-      labs(title = input$var2)
+      ditch_the_axes
     
-  },
-  height = 400, width = 550
-  )
+    ggplotly(p) %>%
+      layout(autosize = F, width = 600, height = 600, margin = m) %>% 
+      colorbar(title = var)
+    
+  })
   
   output$Scatter = renderPlot({
     Variable1 = switch(input$var1, 
@@ -224,7 +248,6 @@ server = function(input, output) {
       geom_smooth(method="lm", se=FALSE, color="red")+
       labs(x=input$var1, y=input$var2)
   })
-
 }
 
 # Run app ----
