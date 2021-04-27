@@ -84,7 +84,7 @@ ui = fluidPage(
           # column(9,plotlyOutput("Map2"))
           splitLayout(cellWidths = c("50%","50%"), plotlyOutput("Map1"), plotlyOutput("Map2"))
           
-        ), fluidRow(plotOutput("Scatter"))
+        ), fluidRow(plotlyOutput("Scatter"))
       )
      )
     )
@@ -218,7 +218,7 @@ server = function(input, output) {
     
   })
   
-  output$Scatter = renderPlot({
+  output$Scatter = renderPlotly({
     Variable1 = switch(input$var1, 
                   "HPI"=dt[which(dt$State_Name == input$St2),c(3)], 
                   "Personal_Income"=dt[which(dt$State_Name == input$St2),c(4)],
@@ -242,11 +242,13 @@ server = function(input, output) {
                   "Unemployment_Rate"=dt[which(dt$State_Name == input$St2),c(11)]
     )
     temp2 = cbind(Variable1, Variable2)
-    colnames(temp2)=c(input$var1,input$var2)
-    ggplot(data=as.data.frame(temp2), aes(x=temp2[,1],y=temp2[,2]))+
+    colnames(temp2)=c("V1","V2")
+    
+    p=ggplot(data=as.data.frame(temp2), aes(x=V1,y=V2))+
       geom_point(color="blue")+
-      geom_smooth(method="lm", se=FALSE, color="red")+
-      labs(x=input$var1, y=input$var2)
+      geom_smooth(method="lm", se=FALSE, color="red")
+    
+    ggplotly(p)
   })
 }
 
