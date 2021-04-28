@@ -134,3 +134,9 @@ step.model <- stepAIC(full.model, direction = "both",
                       trace = FALSE)
 summary(step.model)
 ```
+
+## Collinearity Check
+```{r}
+car::vif(m1)
+```
+
