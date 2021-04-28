@@ -36,6 +36,30 @@ ui = fluidPage(
         )
       )
     ),
+    tabPanel("Simple linear regression",
+      sidebarLayout(
+        sidebarPanel(
+          selectInput("V1","Variable1",
+                      choices = c("HPI", "Personal_Income",
+                                  "Poverty_Percentage", "Population",
+                                  "HighSchoolLess", "HighSchoolOnly",
+                                  "SomeCollege", "BachelorAndHigher",
+                                  "Unemployment_Rate"),
+                      selected = "HPI"
+          ),
+          selectInput("V2","Variable2",
+                      choices = c("HPI", "Personal_Income",
+                                  "Poverty_Percentage", "Population",
+                                  "HighSchoolLess", "HighSchoolOnly",
+                                  "SomeCollege", "BachelorAndHigher",
+                                  "Unemployment_Rate"),
+                      selected = "Personal_Income"
+          ),
+          width = 2
+        ),
+        mainPanel(plotlyOutput("SLR"))
+      ),
+    ),
              
     tabPanel("County Map",
       sidebarLayout(
@@ -80,8 +104,6 @@ ui = fluidPage(
        
       mainPanel(
         fluidRow(
-          # column(3,plotlyOutput("Map1")),
-          # column(9,plotlyOutput("Map2"))
           splitLayout(cellWidths = c("50%","50%"), plotlyOutput("Map1"), plotlyOutput("Map2"))
           
         ), fluidRow(plotlyOutput("Scatter"))
@@ -103,6 +125,47 @@ server = function(input, output) {
     }
     temp[, input$show_vars, drop = FALSE]
   }))
+  
+  output$SLR = renderPlotly({
+    dt1 = switch(input$V1, 
+                  "HPI"=dt[,c(3)], 
+                  "Personal_Income"=dt[,c(4)],
+                  "Poverty_Percentage"=dt[,c(5)], 
+                  "Population"=dt[,c(6)],
+                  "HighSchoolLess"=dt[,c(7)], 
+                  "HighSchoolOnly"=dt[,c(8)],
+                  "SomeCollege"=dt[,c(9)], 
+                  "BachelorAndHigher"=dt[,c(10)],
+                  "Unemployment_Rate"=dt[,c(11)]
+    )
+    
+    dt2 = switch(input$V2, 
+                 "HPI"=dt[,c(3)], 
+                 "Personal_Income"=dt[,c(4)],
+                 "Poverty_Percentage"=dt[,c(5)], 
+                 "Population"=dt[,c(6)],
+                 "HighSchoolLess"=dt[,c(7)], 
+                 "HighSchoolOnly"=dt[,c(8)],
+                 "SomeCollege"=dt[,c(9)], 
+                 "BachelorAndHigher"=dt[,c(10)],
+                 "Unemployment_Rate"=dt[,c(11)]
+    )
+    
+    dt_temp = as.data.frame(cbind(dt1,dt2))
+    colnames(dt_temp)=c("V1","V2")
+    fit = lm(V2~V1, data = dt_temp)
+    dt_temp$predicted = predict(fit)
+    dt_temp$residuals = residuals(fit)
+    
+    p = ggplot(dt_temp, aes(x = V1, y = V2)) +
+      geom_smooth(method = "lm", se = FALSE, color = "red") +
+      geom_segment(aes(xend = V1, yend = predicted), alpha=0.2) +
+      geom_point() +
+      geom_point(aes(y = predicted), shape = 1) +
+      theme_bw()
+    
+    ggplotly(p)
+  })
   
   output$Map1 = renderPlotly({
     data = switch(input$var1, 
@@ -155,10 +218,7 @@ server = function(input, output) {
     
     ggplotly(p) %>%
       layout(autosize = F, width = 600, height = 600, margin = m) %>% 
-      colorbar(title = var) %>% 
-      add_markers(
-        text = ~paste(subregion, input$St2, var1)
-      )
+      colorbar(title = var)
     
   })
   
@@ -241,12 +301,25 @@ server = function(input, output) {
                   "BachelorAndHigher"=dt[which(dt$State_Name == input$St2),c(10)],
                   "Unemployment_Rate"=dt[which(dt$State_Name == input$St2),c(11)]
     )
-    temp2 = cbind(Variable1, Variable2)
+    
+    temp2 = as.data.frame(cbind(Variable1, Variable2)) 
     colnames(temp2)=c("V1","V2")
     
-    p=ggplot(data=as.data.frame(temp2), aes(x=V1,y=V2))+
-      geom_point(color="blue")+
-      geom_smooth(method="lm", se=FALSE, color="red")
+    fit = lm(V2~V1, data = temp2)
+    temp2$predicted = predict(fit)
+    temp2$residuals = residuals(fit)
+    
+    
+    p = ggplot(temp2, aes(x = V1, y = V2)) +
+      geom_smooth(method = "lm", se = FALSE, color = "red") +
+      geom_segment(aes(xend = V1, yend = predicted), alpha=0.2) +
+      geom_point(aes(color = residuals)) +
+      scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+      guides (color = FALSE) + 
+      geom_point(aes(y = predicted), shape = 1) +
+      theme_bw()
+    
+    p
     
     ggplotly(p)
   })
