@@ -97,15 +97,22 @@ corrplot(res, type = "upper", order = "hclust",
 # pca presentation
 ```{r}
 library("tidymodels")
-library("stringr")
-library("tidytext")
+library(tidyverse)
 pca_rec <- recipe(HPI ~., data = temp) %>%
   update_role(State, County, new_role = "id") %>%
   step_normalize(all_predictors()) %>% 
-  step_pca(all_predictors())
+  step_pca(all_predictors(), id = "pca")
 
 pca_prep <- prep(pca_rec)
-tidied_pca <- tidy(pca_prep, 2)
+tidied_pca <- tidy(pca_prep, id="pca") # extract mean values
+
+pca_variances <- tidy(pca_prep, id = "pca", type = "variance")
+pca_variances %>%
+  filter(terms == "percent variance") %>%
+  ggplot(aes(component, value)) +
+  geom_col() +
+  labs(x = "Principal Components", y = "Variance explained (%)") +
+  theme_minimal()
 
 tidied_pca %>%
   filter(component %in% str_c("PC", 1:2)) %>%
@@ -115,7 +122,8 @@ tidied_pca %>%
   geom_col(show.legend = FALSE) +
   facet_wrap(~component, nrow = 1, scales = "free_y") +
   scale_y_reordered() +
-  labs(y = NULL)
+  labs(y = NULL) +
+  theme_minimal()
 ```
 
 
@@ -124,7 +132,8 @@ juice(pca_prep) %>%
   ggplot(aes(PC1, PC2, label = County)) +
   geom_point(aes(color = State), alpha = 0.7, size = 2) +
   geom_text(check_overlap = TRUE, hjust = "inward") +
-  labs(color = NULL)
+  labs(color = NULL) +
+  theme_minimal()
 ```
 
 ## Collinearity Check
