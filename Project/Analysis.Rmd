@@ -94,12 +94,13 @@ corrplot(res, type = "upper", order = "hclust",
          tl.col = "black", tl.srt = 45)
 ```
 
-## old pca
+# pca presentation
 ```{r}
 library("tidymodels")
-library(forcats)
-pca_rec <- recipe(HPI ~., data = dt) %>%
-  update_role(State, County, SomeCollege, new_role = "id") %>%
+library("stringr")
+library("tidytext")
+pca_rec <- recipe(HPI ~., data = temp) %>%
+  update_role(State, County, new_role = "id") %>%
   step_normalize(all_predictors()) %>% 
   step_pca(all_predictors())
 
@@ -107,11 +108,13 @@ pca_prep <- prep(pca_rec)
 tidied_pca <- tidy(pca_prep, 2)
 
 tidied_pca %>%
-  filter(component %in% paste0("PC", 1:7)) %>%
-  mutate(component = fct_inorder(component)) %>%
+  filter(component %in% str_c("PC", 1:2)) %>%
+  mutate(terms = reorder_within(terms, abs(value), component), 
+         component = fct_inorder(component)) %>%
   ggplot(aes(value, terms, fill = terms)) +
   geom_col(show.legend = FALSE) +
-  facet_wrap(~component, nrow = 1) +
+  facet_wrap(~component, nrow = 1, scales = "free_y") +
+  scale_y_reordered() +
   labs(y = NULL)
 ```
 
@@ -124,19 +127,9 @@ juice(pca_prep) %>%
   labs(color = NULL)
 ```
 
-## stepwise regression
-```{r}
-library(MASS)
-# Fit the full model 
-full.model <- lm(HPI ~ Personal_Income + Poverty_Percentage + Population + HighSchoolLess + HighSchoolOnly + SomeCollege + BachelorAndHigher + Unemployment_Rate, data=dt)
-# Stepwise regression model
-step.model <- stepAIC(full.model, direction = "both", 
-                      trace = FALSE)
-summary(step.model)
-```
-
 ## Collinearity Check
 ```{r}
 car::vif(m1)
 ```
+
 
