@@ -98,6 +98,7 @@ corrplot(res, type = "upper", order = "hclust",
 ```{r}
 library("tidymodels")
 library(tidyverse)
+library(tidytext)
 pca_rec <- recipe(HPI ~., data = temp) %>%
   update_role(State, County, new_role = "id") %>%
   step_normalize(all_predictors()) %>% 
